@@ -23,3 +23,6 @@ desktop.ini
 .vscode/
 *.swp
 npm-debug.log*
+
+# Paquets de mise en ligne (construits localement, jamais versionnes)
+/deploiement/
