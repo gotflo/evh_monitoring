@@ -13,12 +13,16 @@ use Illuminate\Console\Command;
  */
 class MonitorCheck extends Command
 {
-    protected $signature = 'monitor:check {--force : verifier meme si une verification vient d\'avoir lieu}';
+    protected $signature = 'monitor:check {--force : verifier meme si une verification vient d\'avoir lieu} {--cron : lancement par le planificateur (preuve que le cron tourne)}';
 
     protected $description = 'Supervision : santé, incidents, alertes, rapports et conservation.';
 
     public function handle(): int
     {
+        // Seul un lancement par le cron prouve que la tache planifiee est en place.
+        if ($this->option('cron')) {
+            \Illuminate\Support\Facades\Cache::forever('monitor:last-cron', now()->toIso8601String());
+        }
         try {
             $result = AlertEngine::evaluate((bool) $this->option('force'));
         } catch (\Throwable $e) {
@@ -32,7 +36,6 @@ class MonitorCheck extends Command
 
             return self::SUCCESS;
         }
-        \Illuminate\Support\Facades\Cache::forever('monitor:last-cron', now()->toIso8601String());
         $this->info(sprintf('État : %s, détections : %d, ouverts : %d, résolus : %d, actions automatiques : %d.', $result['status'] ?? '?',
             $result['findings'] ?? 0, $result['opened'] ?? 0, $result['resolved'] ?? 0, $result['auto_actions'] ?? 0));
 
