@@ -330,6 +330,23 @@ class ConsoleTest extends TestCase
         unset($e);
     }
 
+    public function test_a_scheduler_blocked_by_disabled_proc_open_is_recognised(): void
+    {
+        $this->only('repeated_error');
+        foreach (range(1, 5) as $i) {
+            DB::connection('app')->table('monitor_events')->insert(['created_at' => now()->subMinutes($i), 'level' => 'error', 'service' => 'automation', 'type' => 'exception',
+                'message' => 'LogicException : The Process class relies on proc_open, which is not available on your PHP installation.',
+                'fingerprint' => sha1('proc_open'), 'context' => json_encode(['file' => 'vendor/symfony/process/Process.php:163'])]);
+        }
+
+        AlertEngine::evaluate(true);
+        $incident = Incident::where('rule', 'repeated_error')->firstOrFail();
+        $this->assertStringContainsString('proc_open', $incident->investigation['cause']);
+        $this->assertSame('élevée', $incident->investigation['confidence']);
+        $this->assertStringContainsString('app:push-outbox', $incident->investigation['recommendations'][0]['text']);
+        $this->assertStringContainsString('app:tick', $incident->investigation['recommendations'][0]['text']);
+    }
+
     public function test_late_automation_is_fixed_automatically_once_per_quarter_hour(): void
     {
         $this->only('automation', ['auto' => true]);

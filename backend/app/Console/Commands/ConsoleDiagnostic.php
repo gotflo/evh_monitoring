@@ -96,7 +96,8 @@ class ConsoleDiagnostic extends Command
 
         $cron = Cache::get('monitor:last-cron');
         $this->check('Cron de la console (monitor:check chaque minute)', $cron && now()->diffInMinutes(\Illuminate\Support\Carbon::parse($cron), true) <= 3,
-            'Ajouter dans hPanel la tâche cron « php artisan schedule:run » chaque minute (peut prendre 1 à 2 minutes après l\'ajout).',
+            'Ajouter dans hPanel la tâche cron « php artisan monitor:check --cron » chaque minute, dans le dossier de la console (peut prendre 1 à 2 minutes après l\'ajout).'
+                .(function_exists('proc_open') ? '' : ' Ne pas utiliser « schedule:run » : proc_open est désactivé sur ce serveur, le planificateur ne peut rien lancer.'),
             $cron ? 'dernier passage '.$cron : 'aucun passage pour l\'instant');
 
         $this->newLine();

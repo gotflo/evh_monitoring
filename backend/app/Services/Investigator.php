@@ -275,6 +275,21 @@ class Investigator
             $evidence[] = ['label' => 'Première ligne de la pile', 'value' => (string) ($ctx['trace'][0] ?? $ctx['stack'][1])];
         }
 
+        // Causes connues, reconnues a leur message : explication et remede precis.
+        if (str_contains((string) $last->message, 'proc_open')) {
+            return [
+                'cause' => 'Le cron de la plateforme lance « schedule:run », mais l\'hébergeur a désactivé la fonction PHP proc_open dont le planificateur Laravel a besoin pour démarrer chaque tâche : '
+                    .'aucune tâche planifiée ne passe par le cron (les automatismes ne tournent qu\'avec l\'activité des membres, et les notifications en attente ne sont plus rattrapées chaque minute).',
+                'confidence' => 'élevée',
+                'evidence' => $evidence,
+                'recommendations' => [
+                    ['text' => 'Dans hPanel (Avancé, Tâches Cron), remplacer la tâche « schedule:run » de la plateforme par deux tâches qui lancent les commandes directement, dans le dossier de la plateforme : '
+                        .'« php artisan app:push-outbox » chaque minute et « php artisan app:tick » toutes les 5 minutes.'],
+                    ['text' => 'Vérifier ensuite qu\'aucune nouvelle occurrence n\'apparaît (l\'incident se résout seul).', 'link' => $fingerprint ? '/journaux?fingerprint='.$fingerprint.'&period=7d' : '/journaux'],
+                ],
+            ];
+        }
+
         $browser = $last->service === 'browser';
         $onePage = $byRoute->count() === 1;
         $cause = $browser
@@ -321,7 +336,7 @@ class Investigator
             : 'Le cron de l\'hébergeur ne lance pas les tâches : les automatismes ne passent qu\'avec l\'activité des membres (la nuit, plus rien).',
             'confidence' => $cron ? 'moyenne' : 'élevée', 'evidence' => $evidence,
             'recommendations' => array_values(array_filter([
-                $cron ? null : ['text' => 'Configurer dans hPanel (Avancé, Tâches Cron) une tâche chaque minute : php artisan schedule:run dans le dossier de la plateforme.'],
+                $cron ? null : ['text' => 'Configurer dans hPanel (Avancé, Tâches Cron) deux tâches dans le dossier de la plateforme : « php artisan app:push-outbox » chaque minute et « php artisan app:tick » toutes les 5 minutes (commandes lancées directement : elles fonctionnent même si l\'hébergeur désactive proc_open, contrairement à schedule:run).'],
                 ['text' => 'Relancer les automatismes maintenant.', 'action' => 'run_automation'],
             ]))];
     }

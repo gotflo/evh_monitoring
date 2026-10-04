@@ -56,7 +56,7 @@ class SecurityChecks
             $cron = (bool) ($health['checks']['automation']['cron_seen'] ?? false);
             $add('platform', 'scheduler', 'Tâches planifiées (cron)', $cron ? 'ok' : 'warning',
                 $cron ? 'Le cron de l\'hébergeur lance les tâches de la plateforme.' : 'Aucun passage du cron depuis 30 minutes sur la plateforme.',
-                $cron ? null : 'Cron chaque minute : php artisan schedule:run (dossier de la plateforme).');
+                $cron ? null : 'Crons dans le dossier de la plateforme : php artisan app:push-outbox chaque minute et php artisan app:tick toutes les 5 minutes.');
         }
 
         // La console elle-meme.

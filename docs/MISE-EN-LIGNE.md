@@ -91,8 +91,18 @@ php artisan event:cache
 php artisan route:list --path=api/agent
 ```
 
-Attendu : 11 routes `api/agent/...`. Vérifier aussi que la tâche cron de la plateforme existe toujours
-(hPanel, Avancé, Tâches Cron) : `php artisan schedule:run` chaque minute dans le dossier `espace`.
+Attendu : 11 routes `api/agent/...`.
+
+Tâches cron de la plateforme (hPanel, Avancé, Tâches Cron). Hostinger désactive la fonction PHP `proc_open`,
+dont `schedule:run` a besoin pour démarrer chaque tâche : avec `schedule:run`, rien ne passe par le cron
+(erreur « The Process class relies on proc_open »). Les commandes sont donc lancées directement :
+
+| Fréquence | Commande |
+|---|---|
+| chaque minute (`* * * * *`) | `cd /home/u772952451/domains/vasesdhonneurchicoutimi.org/public_html/espace && /usr/bin/php artisan app:push-outbox >> /dev/null 2>&1` |
+| toutes les 5 minutes (`*/5 * * * *`) | `cd /home/u772952451/domains/vasesdhonneurchicoutimi.org/public_html/espace && /usr/bin/php artisan app:tick >> /dev/null 2>&1` |
+
+L'ancienne tâche `artisan schedule:run` de la plateforme est à supprimer.
 
 ---
 
@@ -153,11 +163,14 @@ Droits : `chmod -R 775 storage bootstrap/cache` et `chmod 640 .env`.
 
 ### B6. Tâche cron de la console
 
-hPanel, Avancé, **Tâches Cron**, ajouter (chaque minute) :
+hPanel, Avancé, **Tâches Cron**, ajouter (chaque minute, type « Personnalisé ») :
 
 ```
-cd /home/u772952451/domains/vasesdhonneurchicoutimi.org/public_html/console && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
+cd /home/u772952451/domains/vasesdhonneurchicoutimi.org/public_html/console && /usr/bin/php artisan monitor:check --cron >> /dev/null 2>&1
 ```
+
+Lancement direct, pas `schedule:run` (voir A : `proc_open` est désactivé chez Hostinger). `monitor:check`
+se protège lui-même des passages en double.
 
 C'est elle qui rend la console temps réel : vérification, enquêtes, actions automatiques, alertes, rapports.
 
