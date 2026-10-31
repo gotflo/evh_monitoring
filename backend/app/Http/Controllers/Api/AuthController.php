@@ -88,7 +88,7 @@ class AuthController extends ConsoleController
         }
 
         $operator->forceFill(['status' => 'active', 'activated_at' => $operator->activated_at ?? now(), 'last_login_at' => now()])->save();
-        $hours = max(1, min(72, (int) config('monitoring.console.session_hours', 12)));
+        $hours = max(1, min(60 * 24, (int) config('monitoring.console.session_hours', 60 * 24)));
         $newToken = $operator->createToken('console', ['console'], now()->addHours($hours));
         $operator->withAccessToken($newToken->accessToken);
         Audit::log($operator, 'console.login', 'success', 'operator', $operator->id, $operator->label(), ['session_hours' => $hours]);

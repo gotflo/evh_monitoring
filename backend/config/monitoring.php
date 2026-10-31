@@ -17,7 +17,7 @@ return [
         // Proprietaire principal a la mise en service (seul numero autorise au depart).
         'owner_phone' => env('CONSOLE_OWNER_PHONE', '+14187181876'),
         // Duree d'une session de la console (heures).
-        'session_hours' => (int) env('CONSOLE_SESSION_HOURS', 12),
+        'session_hours' => (int) env('CONSOLE_SESSION_HOURS', 60 * 24),
     ],
 
     'platform' => [

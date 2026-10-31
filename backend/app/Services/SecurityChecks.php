@@ -68,7 +68,7 @@ class SecurityChecks
         $add('console', 'sms', 'Codes de connexion de la console', $sms === 'twilio_verify' ? 'ok' : ($prod ? 'critical' : 'info'),
             $sms === 'twilio_verify' ? 'Envoyés par Twilio Verify.' : 'Mode « log » : en production, personne ne pourrait recevoir son code.', $sms === 'twilio_verify' ? null : 'SMS_DRIVER=twilio_verify.');
         $hours = (int) config('monitoring.console.session_hours');
-        $add('console', 'sessions', 'Durée des sessions de la console', $hours <= 24 ? 'ok' : 'warning', $hours.' heures (CONSOLE_SESSION_HOURS).');
+        $add('console', 'sessions', 'Durée des sessions de la console', $hours <= 60 * 24 ? 'ok' : 'warning', $hours.' heures (CONSOLE_SESSION_HOURS).');
         $secret = strlen((string) config('monitoring.platform.agent_secret'));
         $add('console', 'agent_secret', 'Secret partagé avec la plateforme', $secret >= 32 ? 'ok' : 'warning', $secret >= 32 ? 'Configuré ('.$secret.' caractères).' : 'Absent ou trop court : actions impossibles.');
         $platformHttps = str_starts_with((string) config('monitoring.platform.url'), 'https://');

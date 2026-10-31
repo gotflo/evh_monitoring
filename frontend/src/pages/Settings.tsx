@@ -39,7 +39,7 @@ export default function Settings() {
             <div><dt>Plateforme supervisée</dt><dd className="cx-mono">{data.collection.platform_url} <span className="cx-help">PLATFORM_URL</span></dd></div>
             <div><dt>Secret partagé</dt><dd>{data.collection.agent_configured ? <Status tone="ok">Configuré</Status> : <Status tone="warn">Absent ou trop court (MONITOR_AGENT_SECRET)</Status>}</dd></div>
             <div><dt>Données depuis</dt><dd>{fmtDate(data.collection.collected_since)}</dd></div>
-            <div><dt>Durée d'une session de la console</dt><dd>{data.collection.session_hours} h <span className="cx-help">CONSOLE_SESSION_HOURS</span></dd></div>
+            <div><dt>Durée d'une session de la console</dt><dd>{data.collection.session_hours >= 48 ? `${Math.round(data.collection.session_hours / 24)} jours` : `${data.collection.session_hours} h`} <span className="cx-help">CONSOLE_SESSION_HOURS</span></dd></div>
           </dl>
           <p className="cx-help mt">Seuils de collecte (requêtes lentes, niveau des journaux) : variables MONITOR_* du fichier .env de la plateforme.</p>
         </Card>
